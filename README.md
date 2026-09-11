@@ -71,8 +71,8 @@
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/your-username/encoderx-ecommerce-platform.git
-   cd encoderx-ecommerce-platform
+   git clone https://github.com/Farhan-176/Ecommerce-Platfrom.git
+   cd Ecommerce-Platfrom
    ```
 
 2. **Install Dependencies**:

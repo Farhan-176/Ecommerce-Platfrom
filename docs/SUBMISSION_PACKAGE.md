@@ -46,7 +46,7 @@ Key technical achievements:
 
 Special thanks to the @EncoderX team for providing an industry-oriented curriculum that challenges us to build scalable, real-world solutions!
 
-🔗 GitHub Repository: [Insert Your GitHub Repo URL]
+🔗 GitHub Repository: https://github.com/Farhan-176/Ecommerce-Platfrom
 🎥 Demo Video Walkthrough: [Insert Your Video Link]
 
 #EncoderX #FullStackDevelopment #WebDevelopment #ECommerce #Internship #LearningInPublic #JavaScript #NodeJS #ExpressJS #WebDev
