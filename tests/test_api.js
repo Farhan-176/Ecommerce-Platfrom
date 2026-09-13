@@ -268,9 +268,46 @@ async function runTests() {
     });
     const updateOrderData = await updateOrderRes.json();
     assert.strictEqual(updateOrderRes.status, 200, 'Order status update should return 200');
-    console.log(`✅ Admin Order #${targetOrderId} Status updated to "Shipped"`);
+    // ==========================================
+    // TEST 5: Security Headers & Compression
+    // ==========================================
+    console.log('\n--- 5. Testing Helmet Security Headers & Rate Limiting ---');
+    const healthRes = await fetch(`http://localhost:${PORT}/api/health`, {
+      headers: { 'Accept-Encoding': 'gzip' }
+    });
+    assert.strictEqual(healthRes.status, 200);
+    assert.ok(healthRes.headers.get('content-security-policy'), 'CSP header should be present');
+    assert.strictEqual(healthRes.headers.get('x-content-type-options'), 'nosniff', 'X-Content-Type-Options should be nosniff');
+    assert.ok(healthRes.headers.get('ratelimit-limit') || healthRes.headers.get('x-ratelimit-limit'), 'RateLimit header should be present');
+    console.log('✅ Helmet Security Headers (CSP, X-Content-Type-Options, RateLimit) verified');
 
-    console.log('\n🎉 ALL BACKEND & DATABASE TESTS PASSED WITH 100% SUCCESS!');
+    // ==========================================
+    // TEST 6: Customer "My Orders" & PDF Invoice Generation
+    // ==========================================
+    console.log('\n--- 6. Testing Customer My-Orders & PDF Invoice Generation ---');
+    const myOrdersRes = await fetch(`${BASE_URL}/orders/my-orders`, {
+      headers: { 'Authorization': `Bearer ${customerToken}` }
+    });
+    const myOrdersData = await myOrdersRes.json();
+    assert.strictEqual(myOrdersRes.status, 200, 'My-orders should return 200');
+    assert.ok(Array.isArray(myOrdersData.orders), 'My-orders should return array');
+    assert.ok(myOrdersData.orders.length > 0, 'Customer should have at least 1 order');
+    console.log(`✅ Customer My-Orders verified: Found ${myOrdersData.orders.length} order(s)`);
+
+    // Download PDF Invoice
+    const sampleOrderNumber = myOrdersData.orders[0].order_number;
+    const invoiceRes = await fetch(`${BASE_URL}/orders/${sampleOrderNumber}/invoice`, {
+      headers: { 'Authorization': `Bearer ${customerToken}` }
+    });
+    assert.strictEqual(invoiceRes.status, 200, 'Invoice endpoint should return 200');
+    assert.strictEqual(invoiceRes.headers.get('content-type'), 'application/pdf', 'Content-Type must be application/pdf');
+    const invoiceBuffer = await invoiceRes.arrayBuffer();
+    const invoiceBytes = Buffer.from(invoiceBuffer);
+    assert.ok(invoiceBytes.length > 500, 'Invoice PDF should have valid content size');
+    assert.strictEqual(invoiceBytes.subarray(0, 4).toString(), '%PDF', 'Invoice must start with %PDF magic header');
+    console.log(`✅ PDF Invoice Generation verified for ${sampleOrderNumber} (${invoiceBytes.length} bytes, valid %PDF)`);
+
+    console.log('\n🎉 ALL BACKEND, DATABASE, SECURITY & PDF INVOICE TESTS PASSED WITH 100% SUCCESS!');
   } finally {
     if (server) {
       await new Promise(resolve => server.close(resolve));

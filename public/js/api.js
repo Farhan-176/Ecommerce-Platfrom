@@ -19,10 +19,14 @@ export function showToast(message, type = 'info') {
   if (type === 'success') icon = 'fa-solid fa-circle-check';
   if (type === 'error') icon = 'fa-solid fa-circle-exclamation';
 
-  toast.innerHTML = `
-    <i class="${icon}" style="font-size: 1.1rem;"></i>
-    <span>${message}</span>
-  `;
+  const iconElement = document.createElement('i');
+  iconElement.className = icon;
+  iconElement.style.fontSize = '1.1rem';
+
+  const messageElement = document.createElement('span');
+  messageElement.textContent = message;
+
+  toast.append(iconElement, messageElement);
 
   container.appendChild(toast);
 

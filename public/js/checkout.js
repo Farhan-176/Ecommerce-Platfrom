@@ -4,6 +4,8 @@
 import { state } from './state.js';
 import { processCheckout, showToast } from './api.js';
 import { loadCatalog } from './catalog.js';
+import { closeCartDrawer } from './cart.js';
+import { formatCurrency } from './currency.js';
 
 export function initCheckout() {
   const modal = document.getElementById('checkout-modal');
@@ -122,7 +124,11 @@ export function initCheckout() {
         if (confirmModal) {
           document.getElementById('confirm-customer-name').textContent = response.order.customerName;
           document.getElementById('confirm-order-number').textContent = response.order.orderNumber;
-          document.getElementById('confirm-total-price').textContent = `$${response.order.totalPrice.toFixed(2)}`;
+          document.getElementById('confirm-total-price').textContent = `$${Number(response.order.totalPrice).toFixed(2)}`;
+          const invoiceBtn = document.getElementById('btn-download-order-invoice');
+          if (invoiceBtn) {
+            invoiceBtn.href = `/api/orders/${response.order.orderNumber}/invoice`;
+          }
           confirmModal.classList.add('active');
         }
       } catch (err) {
@@ -142,6 +148,7 @@ export function initCheckout() {
   if (continueBtn && confirmModal) {
     continueBtn.addEventListener('click', () => {
       confirmModal.classList.remove('active');
+      closeCartDrawer();
     });
   }
 }

@@ -25,8 +25,8 @@
 - [x] **GitHub repository ready:** Clean repository structure with `.gitignore` and professional guidelines.
 - [x] **README completed:** Comprehensive setup guide, architecture breakdown, and demo credentials.
 - [x] **API endpoints documented:** Standard REST specification in `docs/API_DOCUMENTATION.md`.
-- [x] **Video demo recorded:** Checkout workflow and Admin management workflow walkthrough.
-- [x] **LinkedIn post published:** Professional copy prepared with required tags and hashtags.
+- [ ] **Video demo recorded:** Record the checkout workflow and Admin management workflow walkthrough using the script below.
+- [ ] **LinkedIn post published:** Publish the prepared copy below with the required tag and hashtags.
 
 ---
 
@@ -83,7 +83,7 @@ Special thanks to the @EncoderX team for providing an industry-oriented curricul
   - Log in using the 1-click Store Administrator demo account (`admin@store.com`).
   - Notice the **Admin Panel** button appears in the navigation bar.
   - Navigate to the Admin Dashboard.
-  - Review the 4 KPI cards: Total Revenue ($), Orders Processed, Active Catalog Items, and Low Stock Alerts.
+  - Review the 4 KPI cards: Total Revenue (PKR), Orders Processed, Active Catalog Items, and Low Stock Alerts.
   - Show the **Order History** tab: Locate the order placed in Segment 2 and update its status from *Processing* to *Shipped*.
   - Switch to the **Product Inventory** tab.
   - Demonstrate **Create Product**: Add a new developer accessory with price, stock, category, and image URL. Confirm it appears in the table.

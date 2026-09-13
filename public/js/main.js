@@ -7,6 +7,7 @@ import { initCatalog } from './catalog.js';
 import { initCart } from './cart.js';
 import { initCheckout } from './checkout.js';
 import { initAdmin, loadAdminDashboard } from './admin.js';
+import { initOrders } from './orders.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   console.log('🚀 Initializing EncoderX E-Commerce Platform...');
@@ -16,6 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initCart();
   initCheckout();
   initAdmin();
+  initOrders();
   await initCatalog();
 
   // Brand Logo click resets to catalog home

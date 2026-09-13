@@ -3,6 +3,8 @@
 // ==========================================================================
 import { state } from './state.js';
 import { fetchProducts, fetchCategories, showToast } from './api.js';
+import { escapeHtml, safeImageUrl } from './sanitize.js';
+import { formatCurrency } from './currency.js';
 
 let searchDebounceTimer = null;
 
@@ -209,8 +211,8 @@ function createProductCard(product) {
 
   card.innerHTML = `
     <div class="product-image-wrap" data-id="${product.id}">
-      <img src="${product.image_url}" alt="${product.name}" class="product-image" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80'">
-      <span class="badge-category">${product.category}</span>
+      <img src="${safeImageUrl(product.image_url)}" alt="${escapeHtml(product.name)}" class="product-image" loading="lazy">
+      <span class="badge-category">${escapeHtml(product.category)}</span>
       <span class="badge-stock ${stockClass}">${stockLabel}</span>
     </div>
 
@@ -221,11 +223,11 @@ function createProductCard(product) {
         <span style="color: var(--text-subtle); margin-left: 2px;">/ 5.0</span>
       </div>
 
-      <h3 class="product-title" data-id="${product.id}">${product.name}</h3>
-      <p class="product-desc">${product.description}</p>
+      <h3 class="product-title" data-id="${product.id}">${escapeHtml(product.name)}</h3>
+      <p class="product-desc">${escapeHtml(product.description)}</p>
 
       <div class="product-footer">
-        <div class="product-price">$${product.price.toFixed(2)}</div>
+        <div class="product-price">${formatCurrency(product.price)}</div>
         <button class="btn btn-primary btn-add-cart" data-id="${product.id}" ${isOutOfStock ? 'disabled' : ''} id="btn-add-cart-${product.id}">
           <i class="fa-solid fa-cart-plus"></i> ${isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
         </button>
@@ -310,7 +312,7 @@ function openProductModal(product) {
   document.getElementById('modal-product-title').textContent = product.name;
   document.getElementById('modal-product-img').src = product.image_url;
   document.getElementById('modal-product-cat').textContent = product.category;
-  document.getElementById('modal-product-price').textContent = `$${product.price.toFixed(2)}`;
+  document.getElementById('modal-product-price').textContent = formatCurrency(product.price);
   document.getElementById('modal-product-desc').textContent = product.description;
 
   const isOutOfStock = product.stock_count === 0;

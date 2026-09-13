@@ -3,6 +3,8 @@
 // ==========================================================================
 import { state } from './state.js';
 import { showToast } from './api.js';
+import { escapeHtml, safeImageUrl } from './sanitize.js';
+import { formatCurrency } from './currency.js';
 
 export function initCart() {
   setupCartDrawerEvents();
@@ -28,10 +30,7 @@ function setupCartDrawerEvents() {
   }
 
   function closeCart() {
-    if (drawer && backdrop) {
-      drawer.classList.remove('open');
-      backdrop.classList.remove('open');
-    }
+    closeCartDrawer();
   }
 
   if (toggleBtn) toggleBtn.addEventListener('click', openCart);
@@ -92,6 +91,15 @@ function setupCartDrawerEvents() {
   }
 }
 
+export function closeCartDrawer() {
+  const drawer = document.getElementById('cart-drawer');
+  const backdrop = document.getElementById('cart-backdrop');
+  if (drawer && backdrop) {
+    drawer.classList.remove('open');
+    backdrop.classList.remove('open');
+  }
+}
+
 function showPromoMsg(msg, type) {
   const el = document.getElementById('promo-status-msg');
   if (!el) return;
@@ -140,10 +148,10 @@ export function renderCart() {
       </div>
     `;
 
-    if (subtotalEl) subtotalEl.textContent = '$0.00';
-    if (taxEl) taxEl.textContent = '$0.00';
-    if (shippingEl) shippingEl.textContent = '$0.00';
-    if (totalEl) totalEl.textContent = '$0.00';
+    if (subtotalEl) subtotalEl.textContent = formatCurrency(0);
+    if (taxEl) taxEl.textContent = formatCurrency(0);
+    if (shippingEl) shippingEl.textContent = formatCurrency(0);
+    if (totalEl) totalEl.textContent = formatCurrency(0);
     if (discountLine) discountLine.style.display = 'none';
     if (progressBar) progressBar.style.width = '0%';
     if (checkoutBtn) checkoutBtn.disabled = true;
@@ -162,11 +170,11 @@ export function renderCart() {
     const maxStock = item.product.stock_count;
 
     itemEl.innerHTML = `
-      <img src="${item.product.image_url}" alt="${item.product.name}" class="cart-item-img">
+      <img src="${safeImageUrl(item.product.image_url)}" alt="${escapeHtml(item.product.name)}" class="cart-item-img">
       <div class="cart-item-details">
         <div>
-          <h4 class="cart-item-title">${item.product.name}</h4>
-          <div class="cart-item-price">$${item.product.price.toFixed(2)}</div>
+            <h4 class="cart-item-title">${escapeHtml(item.product.name)}</h4>
+          <div class="cart-item-price">${formatCurrency(item.product.price)}</div>
         </div>
 
         <div class="cart-qty-control">
@@ -207,23 +215,23 @@ export function renderCart() {
   // Calculate Totals
   const totals = state.getCartTotals();
 
-  if (subtotalEl) subtotalEl.textContent = `$${totals.subtotal.toFixed(2)}`;
-  if (taxEl) taxEl.textContent = `$${totals.tax.toFixed(2)}`;
+  if (subtotalEl) subtotalEl.textContent = formatCurrency(totals.subtotal);
+  if (taxEl) taxEl.textContent = formatCurrency(totals.tax);
   if (shippingEl) {
-    shippingEl.textContent = totals.shipping === 0 ? 'FREE' : `$${totals.shipping.toFixed(2)}`;
+    shippingEl.textContent = totals.shipping === 0 ? 'FREE' : formatCurrency(totals.shipping);
     shippingEl.style.color = totals.shipping === 0 ? 'var(--success)' : 'inherit';
   }
-  if (totalEl) totalEl.textContent = `$${totals.grandTotal.toFixed(2)}`;
+  if (totalEl) totalEl.textContent = formatCurrency(totals.grandTotal);
 
   // Discount
   if (totals.discount > 0 && discountLine && discountEl) {
     discountLine.style.display = 'flex';
-    discountEl.textContent = `-$${totals.discount.toFixed(2)}`;
+    discountEl.textContent = `-${formatCurrency(totals.discount)}`;
   } else if (discountLine) {
     discountLine.style.display = 'none';
   }
 
-  // Free Shipping Threshold Progress ($150)
+  // Free Shipping Threshold Progress (PKR 150)
   if (meterText && progressBar) {
     if (totals.subtotal >= 150 || totals.shipping === 0) {
       meterText.innerHTML = '<strong style="color: var(--success);"><i class="fa-solid fa-circle-check"></i> FREE Express Shipping Unlocked!</strong>';
@@ -231,7 +239,7 @@ export function renderCart() {
     } else {
       const remaining = (150 - totals.subtotal).toFixed(2);
       const percent = Math.min(100, Math.round((totals.subtotal / 150) * 100));
-      meterText.innerHTML = `Add <strong>$${remaining}</strong> more to qualify for <strong>FREE Express Shipping</strong>!`;
+      meterText.innerHTML = `Add <strong>${formatCurrency(remaining)}</strong> more to qualify for <strong>FREE Express Shipping</strong>!`;
       progressBar.style.width = `${percent}%`;
     }
   }
@@ -247,7 +255,7 @@ export function populateCheckoutSummary() {
   container.innerHTML = state.cart.map(item => `
     <div class="checkout-item-preview">
       <span>${item.quantity}x ${item.product.name}</span>
-      <span style="color: #fff; font-weight: 600;">$${(item.product.price * item.quantity).toFixed(2)}</span>
+      <span style="color: #fff; font-weight: 600;">${formatCurrency(item.product.price * item.quantity)}</span>
     </div>
   `).join('');
 
@@ -255,7 +263,7 @@ export function populateCheckoutSummary() {
     container.innerHTML += `
       <div class="checkout-item-preview" style="color: var(--success);">
         <span>Promo Discount (${state.promo.code})</span>
-        <span>-$${totals.discount.toFixed(2)}</span>
+        <span>-${formatCurrency(totals.discount)}</span>
       </div>
     `;
   }
@@ -263,11 +271,11 @@ export function populateCheckoutSummary() {
   container.innerHTML += `
     <div class="checkout-item-preview" style="color: var(--text-muted); font-size: 0.8rem;">
       <span>Sales Tax (8%) + Shipping</span>
-      <span>$${(totals.tax + totals.shipping).toFixed(2)}</span>
+      <span>${formatCurrency(totals.tax + totals.shipping)}</span>
     </div>
   `;
 
   if (payableEl) {
-    payableEl.textContent = `$${totals.grandTotal.toFixed(2)}`;
+    payableEl.textContent = formatCurrency(totals.grandTotal);
   }
 }

@@ -26,6 +26,7 @@
   - `products`: Catalog items with title, rich description, unit price, stock count, category, rating, and image URL.
   - `orders`: Customer billing, shipping destination, itemized totals, tax, shipping fees, and order fulfillment status.
   - `order_items`: Relational line items linking orders to catalog items with price snapshots and quantity checks.
+- **Entity Relationship Diagram**: See [`docs/ERD.md`](docs/ERD.md) for the complete schema diagram, cardinalities, delete behavior, and modeling notes.
 - **Foreign Key Enforcement & Cascading Rules**: Database integrity maintained via foreign key constraints.
 
 ### 2. Product Catalog & Persistent Shopping Cart (Step 2)
@@ -47,7 +48,7 @@
 ### 4. Admin Dashboard & Role-Based Access Control (Step 4)
 - **RBAC Security Guard**: Admin endpoints and UI views require valid JWT tokens with `role === 'admin'`. Unauthorized regular users or unauthenticated visitors are blocked with `401 Unauthorized` or `403 Forbidden`.
 - **Live Business KPIs**:
-  - Total Store Revenue ($)
+   - Total Store Revenue (PKR)
   - Total Orders Processed
   - Active Catalog Items Count
   - Low Stock & Out-of-Stock Warnings

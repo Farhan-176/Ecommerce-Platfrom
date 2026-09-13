@@ -1,6 +1,7 @@
 const express = require('express');
 const { get, query, transaction } = require('../db/database');
 const { optionalToken, authenticateToken } = require('../middleware/auth');
+const { generateInvoicePdf } = require('../services/invoiceService');
 
 const router = express.Router();
 
@@ -59,10 +60,10 @@ router.post('/checkout', optionalToken, (req, res) => {
     }
 
     for (const item of items) {
-      if (!item.productId || !item.quantity || parseInt(item.quantity, 10) <= 0) {
+      if (!Number.isInteger(item.productId) || !Number.isInteger(item.quantity) || item.quantity <= 0 || item.quantity > 100000) {
         return res.status(400).json({
           success: false,
-          error: 'Invalid cart item specifications.'
+          error: 'Each cart item must include a product ID and an integer quantity from 1 to 100000.'
         });
       }
     }
@@ -77,10 +78,24 @@ router.post('/checkout', optionalToken, (req, res) => {
         });
       }
       const cleanCard = cardNumber.replace(/[\s-]/g, '');
-      if (cleanCard.length < 13 || cleanCard.length > 19) {
+      if (!/^\d{13,19}$/.test(cleanCard)) {
         return res.status(400).json({
           success: false,
           error: 'Please provide a valid 13-19 digit card number.'
+        });
+      }
+      if (!/^\d{2}\/\d{2}$/.test(cardExpiry) || !/^\d{3,4}$/.test(cardCvv)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Please provide a valid expiry date and 3-4 digit security code.'
+        });
+      }
+      const [expiryMonth, expiryYear] = cardExpiry.split('/').map(Number);
+      const expiryDate = new Date(2000 + expiryYear, expiryMonth, 0);
+      if (expiryMonth < 1 || expiryMonth > 12 || expiryDate < new Date()) {
+        return res.status(400).json({
+          success: false,
+          error: 'The payment card expiry date must be valid and in the future.'
         });
       }
     }
@@ -236,14 +251,44 @@ router.get('/my-orders', authenticateToken, (req, res) => {
   }
 });
 
-// Track single order by orderNumber
-router.get('/track/:orderNumber', (req, res) => {
+// Download or view PDF invoice for an order
+router.get('/:orderNumber/invoice', optionalToken, (req, res) => {
   try {
     const { orderNumber } = req.params;
     const order = get('SELECT * FROM orders WHERE order_number = ?', [orderNumber]);
 
     if (!order) {
       return res.status(404).json({ success: false, error: 'Order not found.' });
+    }
+
+    if (req.user && req.user.role !== 'admin' && order.user_id && order.user_id !== req.user.id) {
+      return res.status(403).json({ success: false, error: 'Unauthorized to access this invoice.' });
+    }
+
+    const items = query('SELECT * FROM order_items WHERE order_id = ?', [order.id]);
+    const orderWithItems = { ...order, items };
+
+    generateInvoicePdf(orderWithItems, res);
+  } catch (error) {
+    console.error('Invoice generation error:', error);
+    if (!res.headersSent) {
+      res.status(500).json({ success: false, error: 'Failed to generate PDF invoice.' });
+    }
+  }
+});
+
+// Track single order by orderNumber
+router.get('/track/:orderNumber', authenticateToken, (req, res) => {
+  try {
+    const { orderNumber } = req.params;
+    const order = get('SELECT * FROM orders WHERE order_number = ?', [orderNumber]);
+
+    if (!order) {
+      return res.status(404).json({ success: false, error: 'Order not found.' });
+    }
+
+    if (req.user.role !== 'admin' && order.user_id !== req.user.id) {
+      return res.status(403).json({ success: false, error: 'You are not authorized to view this order.' });
     }
 
     const items = query('SELECT * FROM order_items WHERE order_id = ?', [order.id]);

@@ -247,6 +247,44 @@
 
 ---
 
+### 3.2 Get Customer Past Orders
+- **Endpoint:** `GET /api/orders/my-orders`
+- **Access:** Authenticated (`Bearer <token>`)
+- **Description:** Returns all previous orders placed by the authenticated customer.
+
+#### Response (`200 OK`):
+```json
+{
+  "success": true,
+  "orders": [
+    {
+      "id": 1,
+      "order_number": "ORD-89421",
+      "customer_name": "Farhan Siddiqui",
+      "total_price": 429.84,
+      "order_status": "Delivered",
+      "created_at": "2026-09-11 15:20:00",
+      "items": [ ... ]
+    }
+  ]
+}
+```
+
+---
+
+### 3.3 Download PDF Tax Invoice
+- **Endpoint:** `GET /api/orders/:orderNumber/invoice`
+- **Access:** Public / Order Owner / Admin
+- **Description:** Dynamically generates and streams a branded PDF tax invoice for the specified order.
+
+#### Response (`200 OK`):
+- **Headers:**
+  - `Content-Type: application/pdf`
+  - `Content-Disposition: inline; filename="Invoice-ORD-XXXXXX-XXX.pdf"`
+- **Body:** Binary PDF Stream starting with `%PDF-1.3`
+
+---
+
 ## 4. Protected Administration Endpoints (RBAC)
 *All admin endpoints require `Authorization: Bearer <token>` with `role: "admin"`. Requests without credentials return `401 Unauthorized`; requests from non-admin users return `403 Forbidden`.*
 

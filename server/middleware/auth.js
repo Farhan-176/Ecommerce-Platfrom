@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const { get } = require('../db/database');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'encoderx_super_secure_jwt_secret_key_2026';
 
@@ -69,7 +70,17 @@ function requireRole(requiredRole) {
       });
     }
 
-    if (req.user.role !== requiredRole) {
+    const currentUser = get('SELECT id, name, email, role FROM users WHERE id = ?', [req.user.id]);
+    if (!currentUser) {
+      return res.status(401).json({
+        success: false,
+        error: 'User account is no longer available.'
+      });
+    }
+
+    req.user = currentUser;
+
+    if (currentUser.role !== requiredRole) {
       return res.status(403).json({
         success: false,
         error: `Access denied. Requires '${requiredRole}' role privilege.`

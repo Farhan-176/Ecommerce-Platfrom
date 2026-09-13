@@ -12,6 +12,8 @@ import {
   showToast
 } from './api.js';
 import { loadCatalog } from './catalog.js';
+import { escapeHtml, safeImageUrl } from './sanitize.js';
+import { formatCurrency } from './currency.js';
 
 export function initAdmin() {
   setupAdminNavigation();
@@ -94,7 +96,7 @@ export async function loadAdminDashboard() {
     const { stats } = data;
 
     // Update KPI Tiles
-    document.getElementById('kpi-revenue').textContent = `$${stats.totalRevenue.toFixed(2)}`;
+    document.getElementById('kpi-revenue').textContent = formatCurrency(stats.totalRevenue);
     document.getElementById('kpi-orders').textContent = stats.totalOrders;
     document.getElementById('kpi-products').textContent = stats.totalProducts;
     document.getElementById('kpi-alerts').textContent = stats.lowStockCount + stats.outOfStockCount;
@@ -138,15 +140,15 @@ async function loadAdminProducts() {
       tr.innerHTML = `
         <td>
           <div style="display: flex; align-items: center; gap: 12px;">
-            <img src="${p.image_url}" alt="${p.name}" class="table-img" onerror="this.src='https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80'">
+            <img src="${safeImageUrl(p.image_url)}" alt="${escapeHtml(p.name)}" class="table-img">
             <div>
-              <div style="font-weight: 600; color: #fff;">${p.name}</div>
+              <div style="font-weight: 600; color: #fff;">${escapeHtml(p.name)}</div>
               <div style="font-size: 0.75rem; color: var(--text-subtle);">ID: #${p.id}</div>
             </div>
           </div>
         </td>
-        <td><span class="badge-category" style="position: static;">${p.category}</span></td>
-        <td style="font-weight: 700; color: #93c5fd;">$${p.price.toFixed(2)}</td>
+        <td><span class="badge-category" style="position: static;">${escapeHtml(p.category)}</span></td>
+        <td style="font-weight: 700; color: #93c5fd;">${formatCurrency(p.price)}</td>
         <td><span class="badge-stock ${stockBadgeClass}" style="position: static;">${p.stock_count} units</span></td>
         <td><i class="fa-solid fa-star" style="color: #f59e0b; font-size: 0.8rem;"></i> ${p.rating ? p.rating.toFixed(1) : '4.8'}</td>
         <td>
@@ -217,20 +219,25 @@ async function loadAdminOrders(status = 'all') {
       tr.innerHTML = `
         <td style="font-family: monospace; font-weight: 700; color: var(--secondary);">${order.order_number}</td>
         <td>
-          <div style="font-weight: 600;">${order.customer_name}</div>
-          <div style="font-size: 0.75rem; color: var(--text-subtle);">${order.customer_email}</div>
+          <div style="font-weight: 600;">${escapeHtml(order.customer_name)}</div>
+          <div style="font-size: 0.75rem; color: var(--text-subtle);">${escapeHtml(order.customer_email)}</div>
         </td>
         <td>${orderDate}</td>
         <td>${itemsCount} items</td>
-        <td style="font-weight: 700; color: #fff;">$${order.total_price.toFixed(2)}</td>
+        <td style="font-weight: 700; color: #fff;">${formatCurrency(order.total_price)}</td>
         <td><span class="status-badge ${order.order_status}">${order.order_status}</span></td>
         <td>
-          <select class="status-select" data-id="${order.id}">
-            <option value="Processing" ${order.order_status === 'Processing' ? 'selected' : ''}>Processing</option>
-            <option value="Shipped" ${order.order_status === 'Shipped' ? 'selected' : ''}>Shipped</option>
-            <option value="Delivered" ${order.order_status === 'Delivered' ? 'selected' : ''}>Delivered</option>
-            <option value="Cancelled" ${order.order_status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
-          </select>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <select class="status-select" data-id="${order.id}">
+              <option value="Processing" ${order.order_status === 'Processing' ? 'selected' : ''}>Processing</option>
+              <option value="Shipped" ${order.order_status === 'Shipped' ? 'selected' : ''}>Shipped</option>
+              <option value="Delivered" ${order.order_status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+              <option value="Cancelled" ${order.order_status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+            </select>
+            <a href="/api/orders/${order.order_number}/invoice" target="_blank" class="btn btn-secondary" style="padding: 5px 8px; font-size: 0.75rem; text-decoration: none;" title="Download PDF Invoice">
+              <i class="fa-solid fa-file-pdf" style="color: #ef4444;"></i>
+            </a>
+          </div>
         </td>
       `;
 

@@ -147,6 +147,7 @@ function setupAuthModal() {
 export function updateAuthUI() {
   const authLabel = document.getElementById('auth-btn-label');
   const adminNavBtn = document.getElementById('btn-admin-nav');
+  const myOrdersBtn = document.getElementById('btn-my-orders');
 
   if (state.user) {
     const roleBadge = state.user.role === 'admin' ? ' (Admin)' : '';
@@ -155,8 +156,12 @@ export function updateAuthUI() {
     if (adminNavBtn) {
       adminNavBtn.style.display = state.user.role === 'admin' ? 'inline-flex' : 'none';
     }
+    if (myOrdersBtn) {
+      myOrdersBtn.style.display = 'inline-flex';
+    }
   } else {
     if (authLabel) authLabel.textContent = 'Sign In';
     if (adminNavBtn) adminNavBtn.style.display = 'none';
+    if (myOrdersBtn) myOrdersBtn.style.display = 'none';
   }
 }

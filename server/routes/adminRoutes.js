@@ -1,5 +1,5 @@
 const express = require('express');
-const { get, query, run } = require('../db/database');
+const { get, query, run, transaction } = require('../db/database');
 const { authenticateToken, requireRole } = require('../middleware/auth');
 
 const router = express.Router();
@@ -12,7 +12,7 @@ router.use(requireRole('admin'));
 router.get('/stats', (req, res) => {
   try {
     const revenueRow = get(
-      `SELECT COALESCE(SUM(total_price), 0) as totalRevenue FROM orders WHERE payment_status = 'Paid'`
+      `SELECT COALESCE(SUM(total_price), 0) as totalRevenue FROM orders WHERE payment_status = 'Paid' AND order_status != 'Cancelled'`
     );
     const orderCountRow = get('SELECT COUNT(*) as totalOrders FROM orders');
     const productCountRow = get('SELECT COUNT(*) as totalProducts FROM products');
@@ -25,6 +25,7 @@ router.get('/stats', (req, res) => {
       SELECT p.category, COALESCE(SUM(oi.subtotal), 0) as revenue, SUM(oi.quantity) as unitsSold
       FROM products p
       LEFT JOIN order_items oi ON p.id = oi.product_id
+      LEFT JOIN orders o ON o.id = oi.order_id AND o.order_status != 'Cancelled'
       GROUP BY p.category
       ORDER BY revenue DESC
     `);
@@ -36,6 +37,7 @@ router.get('/stats', (req, res) => {
              COALESCE(SUM(oi.subtotal), 0) as totalRevenue
       FROM products p
       JOIN order_items oi ON p.id = oi.product_id
+      JOIN orders o ON o.id = oi.order_id AND o.order_status != 'Cancelled'
       GROUP BY p.id
       ORDER BY totalSold DESC
       LIMIT 5
@@ -115,12 +117,36 @@ router.patch('/orders/:id/status', (req, res) => {
       });
     }
 
-    const order = get('SELECT id FROM orders WHERE id = ?', [id]);
+    const order = get('SELECT id, order_status FROM orders WHERE id = ?', [id]);
     if (!order) {
       return res.status(404).json({ success: false, error: 'Order not found.' });
     }
 
-    run('UPDATE orders SET order_status = ? WHERE id = ?', [status, id]);
+    const allowedTransitions = {
+      Pending: ['Processing', 'Cancelled'],
+      Processing: ['Shipped', 'Cancelled'],
+      Shipped: ['Delivered', 'Cancelled'],
+      Delivered: [],
+      Cancelled: []
+    };
+    if (!allowedTransitions[order.order_status].includes(status)) {
+      return res.status(409).json({
+        success: false,
+        error: `Order cannot move from ${order.order_status} to ${status}.`
+      });
+    }
+
+    transaction(tx => {
+      if (status === 'Cancelled') {
+        const items = tx.query('SELECT product_id, quantity FROM order_items WHERE order_id = ?', [id]);
+        for (const item of items) {
+          if (item.product_id !== null) {
+            tx.run('UPDATE products SET stock_count = stock_count + ? WHERE id = ?', [item.quantity, item.product_id]);
+          }
+        }
+      }
+      tx.run('UPDATE orders SET order_status = ? WHERE id = ?', [status, id]);
+    });
 
     return res.json({
       success: true,

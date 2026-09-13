@@ -43,6 +43,10 @@
           <i class="fa-solid fa-shield-halved"></i> Admin Panel
         </button>
 
+        <button id="btn-my-orders" class="btn btn-secondary" style="display: none;">
+          <i class="fa-solid fa-receipt"></i> <span>My Orders</span>
+        </button>
+
         <button id="btn-auth-open" class="btn btn-secondary">
           <i class="fa-regular fa-user"></i> <span id="auth-btn-label">Sign In</span>
         </button>
@@ -167,7 +171,7 @@
         <div class="kpi-card kpi-revenue">
           <div class="kpi-icon"><i class="fa-solid fa-dollar-sign"></i></div>
           <div>
-            <div class="kpi-value" id="kpi-revenue">$0.00</div>
+            <div class="kpi-value" id="kpi-revenue">PKR 0.00</div>
             <div class="kpi-label">Total Revenue</div>
           </div>
         </div>
@@ -294,7 +298,7 @@
     <div style="padding: 12px 24px 0;">
       <div class="shipping-meter">
         <div id="shipping-meter-text" style="color: var(--text-muted); font-weight: 500;">
-          Add $150.00 more to qualify for <strong>FREE Express Shipping</strong>!
+          Add PKR 150.00 more to qualify for <strong>FREE Express Shipping</strong>!
         </div>
         <div class="shipping-progress">
           <div class="shipping-bar" id="shipping-progress-bar" style="width: 0%;"></div>
@@ -318,23 +322,23 @@
 
       <div class="cart-summary-line">
         <span>Subtotal</span>
-        <span id="cart-subtotal">$0.00</span>
+        <span id="cart-subtotal">PKR 0.00</span>
       </div>
       <div class="cart-summary-line" id="discount-summary-line" style="display: none; color: var(--success);">
         <span>Promo Discount</span>
-        <span id="cart-discount">-$0.00</span>
+        <span id="cart-discount">-PKR 0.00</span>
       </div>
       <div class="cart-summary-line">
         <span>Sales Tax (8%)</span>
-        <span id="cart-tax">$0.00</span>
+        <span id="cart-tax">PKR 0.00</span>
       </div>
       <div class="cart-summary-line">
         <span>Estimated Shipping</span>
-        <span id="cart-shipping">$0.00</span>
+        <span id="cart-shipping">PKR 0.00</span>
       </div>
       <div class="cart-summary-line total">
         <span>Total Due</span>
-        <span id="cart-grand-total">$0.00</span>
+        <span id="cart-grand-total">PKR 0.00</span>
       </div>
 
       <button id="btn-proceed-checkout" class="btn btn-primary" style="width: 100%; margin-top: 16px; padding: 12px;">
@@ -362,7 +366,7 @@
           <div id="checkout-items-preview"></div>
           <div style="border-top: 1px solid var(--border-subtle); margin-top: 10px; padding-top: 10px; display: flex; justify-content: space-between; font-weight: 700;">
             <span>Total Payable:</span>
-            <span id="checkout-total-payable" style="color: var(--secondary); font-size: 1.1rem;">$0.00</span>
+            <span id="checkout-total-payable" style="color: var(--secondary); font-size: 1.1rem;">PKR 0.00</span>
           </div>
         </div>
 
@@ -455,7 +459,7 @@
           </div>
           <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.88rem;">
             <span style="color: var(--text-muted);">Amount Paid:</span>
-            <strong id="confirm-total-price" style="color: var(--success);">$0.00</strong>
+            <strong id="confirm-total-price" style="color: var(--success);">PKR 0.00</strong>
           </div>
           <div style="display: flex; justify-content: space-between; font-size: 0.88rem;">
             <span style="color: var(--text-muted);">Estimated Delivery:</span>
@@ -463,9 +467,32 @@
           </div>
         </div>
 
-        <button id="btn-continue-shopping" class="btn btn-primary" style="width: 100%; padding: 12px;">
-          Continue Shopping
-        </button>
+        <div style="display: flex; gap: 10px; margin-top: 16px;">
+          <a id="btn-download-order-invoice" href="#" target="_blank" class="btn btn-secondary" style="flex: 1; padding: 12px; text-decoration: none;">
+            <i class="fa-solid fa-file-pdf" style="color: #ef4444;"></i> PDF Invoice
+          </a>
+          <button id="btn-continue-shopping" class="btn btn-primary" style="flex: 1; padding: 12px;">
+            Continue Shopping
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       Customer "My Orders" History Modal
+       ========================================== -->
+  <div class="modal-backdrop" id="my-orders-modal">
+    <div class="modal-box" style="max-width: 720px;">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fa-solid fa-receipt" style="color: var(--primary); margin-right: 8px;"></i>
+          My Orders & Invoices
+        </div>
+        <button class="drawer-close" id="btn-close-my-orders"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" id="my-orders-list" style="max-height: 70vh; overflow-y: auto;">
+        <!-- Injected dynamically by orders.js -->
       </div>
     </div>
   </div>
@@ -564,7 +591,7 @@
               <span id="modal-product-stock-badge" class="badge-stock in-stock" style="position: static;">In Stock</span>
             </div>
             <div id="modal-product-rating" class="product-rating"></div>
-            <div id="modal-product-price" class="product-price" style="font-size: 1.8rem; margin: 12px 0;">$0.00</div>
+            <div id="modal-product-price" class="product-price" style="font-size: 1.8rem; margin: 12px 0;">PKR 0.00</div>
             <p id="modal-product-desc" style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5;"></p>
           </div>
 
