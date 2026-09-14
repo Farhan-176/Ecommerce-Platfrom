@@ -124,11 +124,9 @@ export function initCheckout() {
         if (confirmModal) {
           document.getElementById('confirm-customer-name').textContent = response.order.customerName;
           document.getElementById('confirm-order-number').textContent = response.order.orderNumber;
-          document.getElementById('confirm-total-price').textContent = `$${Number(response.order.totalPrice).toFixed(2)}`;
+          document.getElementById('confirm-total-price').textContent = formatCurrency(response.order.totalPrice);
           const invoiceBtn = document.getElementById('btn-download-order-invoice');
-          if (invoiceBtn) {
-            invoiceBtn.href = `/api/orders/${response.order.orderNumber}/invoice`;
-          }
+          if (invoiceBtn) invoiceBtn.href = `/api/orders/${response.order.orderNumber}/invoice`;
           confirmModal.classList.add('active');
         }
       } catch (err) {

@@ -228,15 +228,13 @@ async function loadAdminOrders(status = 'all') {
         <td><span class="status-badge ${order.order_status}">${order.order_status}</span></td>
         <td>
           <div style="display: flex; align-items: center; gap: 8px;">
-            <select class="status-select" data-id="${order.id}">
-              <option value="Processing" ${order.order_status === 'Processing' ? 'selected' : ''}>Processing</option>
-              <option value="Shipped" ${order.order_status === 'Shipped' ? 'selected' : ''}>Shipped</option>
-              <option value="Delivered" ${order.order_status === 'Delivered' ? 'selected' : ''}>Delivered</option>
-              <option value="Cancelled" ${order.order_status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
-            </select>
-            <a href="/api/orders/${order.order_number}/invoice" target="_blank" class="btn btn-secondary" style="padding: 5px 8px; font-size: 0.75rem; text-decoration: none;" title="Download PDF Invoice">
-              <i class="fa-solid fa-file-pdf" style="color: #ef4444;"></i>
-            </a>
+          <select class="status-select" data-id="${order.id}">
+            <option value="Processing" ${order.order_status === 'Processing' ? 'selected' : ''}>Processing</option>
+            <option value="Shipped" ${order.order_status === 'Shipped' ? 'selected' : ''}>Shipped</option>
+            <option value="Delivered" ${order.order_status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+            <option value="Cancelled" ${order.order_status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+          </select>
+          <a href="/api/orders/${order.order_number}/invoice" target="_blank" class="btn btn-secondary" style="padding: 5px 8px; font-size: 0.75rem; text-decoration: none;" title="Download PDF Invoice"><i class="fa-solid fa-file-pdf" style="color: #ef4444;"></i></a>
           </div>
         </td>
       `;

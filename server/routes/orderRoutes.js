@@ -251,33 +251,23 @@ router.get('/my-orders', authenticateToken, (req, res) => {
   }
 });
 
-// Download or view PDF invoice for an order
-router.get('/:orderNumber/invoice', optionalToken, (req, res) => {
+// Track single order by orderNumber
+router.get('/:orderNumber/invoice', authenticateToken, (req, res) => {
   try {
     const { orderNumber } = req.params;
     const order = get('SELECT * FROM orders WHERE order_number = ?', [orderNumber]);
-
-    if (!order) {
-      return res.status(404).json({ success: false, error: 'Order not found.' });
-    }
-
-    if (req.user && req.user.role !== 'admin' && order.user_id && order.user_id !== req.user.id) {
+    if (!order) return res.status(404).json({ success: false, error: 'Order not found.' });
+    if (req.user.role !== 'admin' && order.user_id !== req.user.id) {
       return res.status(403).json({ success: false, error: 'Unauthorized to access this invoice.' });
     }
-
     const items = query('SELECT * FROM order_items WHERE order_id = ?', [order.id]);
-    const orderWithItems = { ...order, items };
-
-    generateInvoicePdf(orderWithItems, res);
+    generateInvoicePdf({ ...order, items }, res);
   } catch (error) {
     console.error('Invoice generation error:', error);
-    if (!res.headersSent) {
-      res.status(500).json({ success: false, error: 'Failed to generate PDF invoice.' });
-    }
+    if (!res.headersSent) res.status(500).json({ success: false, error: 'Failed to generate PDF invoice.' });
   }
 });
 
-// Track single order by orderNumber
 router.get('/track/:orderNumber', authenticateToken, (req, res) => {
   try {
     const { orderNumber } = req.params;

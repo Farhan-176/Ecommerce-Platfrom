@@ -3,6 +3,7 @@
 // ==========================================================================
 import { state } from './state.js';
 import { showToast } from './api.js';
+import { formatCurrency } from './currency.js';
 
 export function initOrders() {
   const myOrdersBtn = document.getElementById('btn-my-orders');
@@ -86,7 +87,7 @@ export async function openMyOrdersModal() {
           <span style="color: #e2e8f0;">
             <strong style="color: var(--primary);">${item.quantity}x</strong> ${item.product_name}
           </span>
-          <span style="font-weight: 600; color: #94a3b8;">$${Number(item.subtotal).toFixed(2)}</span>
+          <span style="font-weight: 600; color: #94a3b8;">${formatCurrency(item.subtotal)}</span>
         </div>
       `).join('');
 
@@ -112,7 +113,7 @@ export async function openMyOrdersModal() {
 
         <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem;">
           <span style="color: var(--text-muted);">Total Paid:</span>
-          <strong style="font-size: 1.15rem; color: var(--success);">$${Number(order.total_price).toFixed(2)}</strong>
+          <strong style="font-size: 1.15rem; color: var(--success);">${formatCurrency(order.total_price)}</strong>
         </div>
       `;
 
